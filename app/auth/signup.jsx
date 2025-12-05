@@ -1,8 +1,46 @@
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, View } from 'react-native';
 import { Button, Text, TextInput } from 'react-native-paper';
+import { useAuth } from '../../context/authContext';
 
-export default function AuthScreen() {
+export default function SignupScreen() {
+    const { signup } = useAuth();
+
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confPassword, setConfPassword] = useState('');
+    const [error, setError] = useState('');
+
+    const router = useRouter();
+
+    const handleSubmit = async () => {
+        if (!inputValidation()) return;
+
+        try {
+            await signup({ name, email, password });
+            router.replace('/');
+        } catch (error) {
+            if (error instanceof Error) {
+                setError(error?.message);
+            }
+        }
+    };
+
+    const inputValidation = () => {
+        if (!name && !email && !password && !confPassword) {
+            setError('Fill the all input field are required!');
+        } else if (password.length < 6) {
+            setError('Password must be 6 character.');
+        } else if (password !== confPassword) {
+            setError('Confirm password did not match.');
+        } else {
+            setError('');
+            return true;
+        }
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -13,7 +51,13 @@ export default function AuthScreen() {
                 </Text>
             </View>
             <View className="flex-col gap-5 ">
-                <TextInput mode="outlined" label="Name" placeholder="Enter your full name" />
+                <TextInput
+                    mode="outlined"
+                    label="Name"
+                    placeholder="Enter your full name"
+                    value={name}
+                    onChangeText={(e) => setName(e)}
+                />
 
                 <TextInput
                     mode="outlined"
@@ -21,13 +65,37 @@ export default function AuthScreen() {
                     placeholder="Enter your email"
                     autoCapitalize="none"
                     keyboardType="email-address"
+                    value={email}
+                    onChangeText={(e) => setEmail(e)}
                 />
 
-                <TextInput mode="outlined" label="Password" textContentType="newPassword" secureTextEntry />
+                <TextInput
+                    mode="outlined"
+                    label="Password"
+                    textContentType="newPassword"
+                    secureTextEntry
+                    value={password}
+                    onChangeText={(e) => setPassword(e)}
+                />
 
-                <TextInput mode="outlined" label="Password" textContentType="password" secureTextEntry />
+                <TextInput
+                    mode="outlined"
+                    label="Password"
+                    textContentType="password"
+                    secureTextEntry
+                    value={confPassword}
+                    onChangeText={(e) => setConfPassword(e)}
+                />
 
-                <Button mode="contained">Create Account</Button>
+                {error && (
+                    <Text variant="titleMedium" className="text-red-500 ">
+                        {error}
+                    </Text>
+                )}
+
+                <Button mode="contained" onPress={handleSubmit}>
+                    Create Account
+                </Button>
             </View>
 
             <View className="flex-row gap-2 justify-center">
