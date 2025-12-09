@@ -1,12 +1,13 @@
-import { updateHabitById } from '@/lib/appwrite';
+import { deleteHabitById, updateHabitById } from '@/lib/appwrite';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { useEffect, useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Card, Checkbox, Chip, IconButton, Menu } from 'react-native-paper';
+import { Alert, Pressable, Text, View } from 'react-native';
+import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { Card, Chip } from 'react-native-paper';
 
 const HabitCard = ({ habit, onComplete, onEdit, onDelete }) => {
     const [isCompleted, setIsCompleted] = useState(habit?.isCompleted);
     const [menuVisible, setMenuVisible] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
     const getFrequencyColor = (frequency) => {
         switch (frequency) {
             case 'Daily':
@@ -20,10 +21,6 @@ const HabitCard = ({ habit, onComplete, onEdit, onDelete }) => {
         }
     };
 
-    const handleCompleteToggle = () => {
-        setIsCompleted(!isCompleted);
-    };
-
     const handleDelete = () => {
         Alert.alert('Delete Habit', 'Are you sure you want to delete this habit?', [
             { text: 'Cancel', style: 'cancel' },
@@ -31,8 +28,7 @@ const HabitCard = ({ habit, onComplete, onEdit, onDelete }) => {
                 text: 'Delete',
                 style: 'destructive',
                 onPress: () => {
-                    onDelete(habit.$id);
-                    setMenuVisible(false);
+                    deleteHabitById(habit.$id);
                 },
             },
         ]);
@@ -42,8 +38,36 @@ const HabitCard = ({ habit, onComplete, onEdit, onDelete }) => {
         updateHabitById(habit.$id, { isCompleted });
     }, [habit.$id, isCompleted]);
 
+    /**
+     * - Swipe left actions
+     */
+    const renderLeftAction = () => {
+        return (
+            <Pressable
+                className="w-24 m-4 rounded-lg flex-col justify-center items-center bg-red-400"
+                onPress={handleDelete}>
+                <AntDesign name="delete" size={36} color="white" />
+            </Pressable>
+        );
+    };
+
+    /**
+     * - Render right actions
+     */
+    const renderRightAction = () => {
+        return (
+            <Pressable className="w-28 m-4 rounded-lg flex-col justify-center items-center bg-green-400">
+                {isCompleted ? (
+                    <Text className="text-white">Completed</Text>
+                ) : (
+                    <AntDesign name="check-circle" size={36} color="white" onPress={() => setIsCompleted(true)} />
+                )}
+            </Pressable>
+        );
+    };
+
     return (
-        <>
+        <Swipeable renderLeftActions={renderLeftAction} renderRightActions={renderRightAction}>
             <Card
                 style={[
                     {
@@ -59,68 +83,22 @@ const HabitCard = ({ habit, onComplete, onEdit, onDelete }) => {
                             <Text className="text-sm text-gray-600 leading-4">{habit.description}</Text>
                         </View>
 
-                        {/* Menu Button */}
-                        <Menu
-                            visible={menuVisible}
-                            onDismiss={() => setMenuVisible(false)}
-                            anchor={
-                                <IconButton
-                                    icon="dots-vertical"
-                                    size={20}
-                                    onPress={() => setMenuVisible(true)}
-                                    className={'m-0'}
-                                />
-                            }>
-                            <Menu.Item
-                                onPress={() => {
-                                    onEdit(habit);
-                                    setMenuVisible(false);
-                                }}
-                                title="Edit"
-                                leadingIcon="pencil"
-                            />
-                            <Menu.Item
-                                onPress={() => {
-                                    setModalVisible(true);
-                                    setMenuVisible(false);
-                                }}
-                                title="View Details"
-                                leadingIcon="information"
-                            />
-                            <Menu.Item onPress={handleDelete} title="Delete" leadingIcon="delete" textColor="red" />
-                        </Menu>
+                        <View className="flex-row gap-2 items-center p-2 rounded-full bg-yellow-100 ">
+                            <AntDesign name="fire" size={18} color="black" />
+                            <Text>10 day streak</Text>
+                        </View>
                     </View>
 
                     {/* Frequency and Status Chips */}
                     <View className="flex-row gap-2 mb-4">
-                        <Chip icon="repeat" textStyle={{ color: getFrequencyColor(habit.frequency) }}>
+                        <Chip icon="repeat" textStyle={{ color: 'red' }}>
                             {habit.frequency}
                         </Chip>
                     </View>
-
-                    {/* Complete Button */}
-                    <TouchableOpacity
-                        style={{
-                            backgroundColor: isCompleted ? '#10B981' : '#6366F1',
-                        }}
-                        className="py-3 px-4 rounded-lg flex-row items-center justify-center"
-                        onPress={handleCompleteToggle}>
-                        <Checkbox status={isCompleted ? 'checked' : 'unchecked'} color="#FFFFFF" />
-                        <Text className="text-white font-semibold ml-2">
-                            {isCompleted ? 'Completed' : 'Mark Complete'}
-                        </Text>
-                    </TouchableOpacity>
                 </Card.Content>
             </Card>
-        </>
+        </Swipeable>
     );
 };
 
 export default HabitCard;
-
-const styles = StyleSheet.create({
-    strikethrough: {
-        textDecorationLine: 'line-through',
-        opacity: 0.6,
-    },
-});

@@ -44,7 +44,6 @@ export default function AddHabitScreen() {
                 title: title.trim(),
                 description: description.trim(),
                 frequency: frequency,
-                createdAt: new Date().toISOString(),
                 userId: user?.$id,
             };
 

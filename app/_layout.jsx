@@ -2,6 +2,7 @@ import { AuthProvider, useAuth } from '@/context/authContext';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import '../global.css';
 
@@ -35,13 +36,15 @@ const RouteGuard = ({ children }) => {
 
 export default function RootLayout() {
     return (
-        <AuthProvider>
-            <RouteGuard>
-                <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="(tabs)" />
-                </Stack>
-                <StatusBar style="auto" />
-            </RouteGuard>
-        </AuthProvider>
+        <GestureHandlerRootView>
+            <AuthProvider>
+                <RouteGuard>
+                    <Stack screenOptions={{ headerShown: false }}>
+                        <Stack.Screen name="(tabs)" />
+                    </Stack>
+                    <StatusBar style="auto" />
+                </RouteGuard>
+            </AuthProvider>
+        </GestureHandlerRootView>
     );
 }
