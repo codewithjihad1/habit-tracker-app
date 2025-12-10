@@ -3,7 +3,7 @@ import { useAuth } from '@/context/authContext';
 import { client, getHabitsByUserId, habitCollectionId, habitDbId } from '@/lib/appwrite';
 import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
-import { Text } from 'react-native-paper';
+import { ActivityIndicator, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
@@ -60,8 +60,8 @@ export default function HomeScreen() {
 
             <ScrollView>
                 {habits.length === 0 ? (
-                    <View>
-                        <Text>No Habit yet. Add new Habit</Text>
+                    <View className="flex-1 justify-center">
+                        <ActivityIndicator size={'large'} />
                     </View>
                 ) : (
                     habits.length >= 0 && habits.map((habit) => <HabitCard key={habit.$id} habit={habit} />)

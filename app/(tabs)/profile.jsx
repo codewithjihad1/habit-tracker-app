@@ -3,19 +3,23 @@ import { useState } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
 import { ActivityIndicator, Button, Text, TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import PasswordModal from '../../components/PasswordModal';
 import { useAuth } from '../../context/authContext';
+import { updateProfilePrefs } from '../../lib/appwrite';
 
 export default function ProfileScreen({ navigation }) {
     const { user, signout } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [password, setPassword] = useState('');
+    const [open, setOpen] = useState(false);
     const [userInfo, setUserInfo] = useState({
-        name: user?.name || '',
-        email: user?.email || '',
-        phone: user?.phone || '+880 1555555555',
-        location: user?.location || 'Dhaka, BD',
-        bio: user?.bio || 'Mobile developer passionate about React Native',
-        avatar: user?.avatar,
+        name: user?.name,
+        email: user?.email,
+        phone: user?.phone,
+        location: user?.prefs?.location,
+        bio: user?.prefs?.bio,
+        avatar: user?.prefs?.avatar,
     });
 
     const handleLogout = async () => {
@@ -43,77 +47,34 @@ export default function ProfileScreen({ navigation }) {
     };
 
     const handleSaveProfile = async () => {
+        if (user.email === userInfo.email) delete userInfo.email;
+        if (user.name === userInfo.name) delete userInfo.name;
+        if (user.phone === userInfo.phone) delete userInfo.phone;
+
         try {
             setIsLoading(true);
-            // Call your API to update user profile
-            // await updateUserProfile(userInfo);
+            await updateProfilePrefs(userInfo, password);
             setIsEditing(false);
             Alert.alert('Success', 'Profile updated successfully');
         } catch (error) {
             Alert.alert('Error', 'Failed to update profile. Please try again.');
         } finally {
             setIsLoading(false);
+            setOpen(false);
         }
     };
 
     const handleCancelEdit = () => {
         setUserInfo({
-            name: user?.name || '',
-            email: user?.email || '',
-            phone: user?.phone || '+880 15555555',
-            location: user?.location || 'Dhaka, BD',
-            bio: user?.bio || 'Mobile developer passionate about React Native',
-            avatar: user?.avatar,
+            name: user?.name,
+            email: user?.email,
+            phone: user?.phone,
+            location: user?.prefs.location,
+            bio: user?.prefs.bio,
+            avatar: user?.prefs.avatar,
         });
         setIsEditing(false);
     };
-
-    // const renderProfileHeader = () => (
-    //     <SafeAreaView className="items-center mb-6 bg-white rounded-2xl py-6 px-4 shadow-md">
-    //         <TouchableOpacity className="relative mb-4">
-    //             {userInfo.avatar ? (
-    //                 <Image
-    //                     source={{ uri: userInfo.avatar }}
-    //                     className="w-24 h-24 rounded-full border-4 border-gray-200"
-    //                 />
-    //             ) : (
-    //                 <View className="w-24 h-24 rounded-full bg-blue-500 items-center justify-center border-4 border-gray-200">
-    //                     <View className="text-2xl font-bold text-white">{userInfo.name.charAt(0).toUpperCase()}</View>
-    //                 </View>
-    //             )}
-    //             {isEditing && (
-    //                 <View className="absolute bottom-0 right-0 bg-blue-600 rounded-full p-2 elevation-5">
-    //                     <MaterialCommunityIcons name="camera" size={24} color="#fff" />
-    //                 </View>
-    //             )}
-    //         </TouchableOpacity>
-
-    //         {isEditing ? (
-    //             <TextInput
-    //                 label="Name"
-    //                 value={userInfo.name}
-    //                 onChangeText={(text) => setUserInfo({ ...userInfo, name: text })}
-    //                 mode="outlined"
-    //                 className="w-full mt-3"
-    //             />
-    //         ) : (
-    //             <View className="text-2xl font-bold text-gray-900 mt-4">{userInfo.name}</View>
-    //         )}
-
-    //         {isEditing ? (
-    //             <TextInput
-    //                 label="Email"
-    //                 value={userInfo.email}
-    //                 onChangeText={(text) => setUserInfo({ ...userInfo, email: text })}
-    //                 mode="outlined"
-    //                 editable={false}
-    //                 className="w-full mt-3"
-    //             />
-    //         ) : (
-    //             <View className="text-sm text-gray-600 mt-2">{userInfo.email}</View>
-    //         )}
-    //     </SafeAreaView>
-    // );
 
     const renderInfoSection = () => (
         <View className="bg-white rounded-2xl p-5 mb-4 shadow-sm">
@@ -124,7 +85,7 @@ export default function ProfileScreen({ navigation }) {
                     <>
                         <TextInput
                             label="Phone"
-                            value={userInfo.phone}
+                            defaultValue={user?.phone || 'N/A'}
                             onChangeText={(text) => setUserInfo({ ...userInfo, phone: text })}
                             mode="outlined"
                             className="mb-3"
@@ -132,7 +93,7 @@ export default function ProfileScreen({ navigation }) {
                         />
                         <TextInput
                             label="Location"
-                            value={userInfo.location}
+                            defaultValue={user?.prefs?.location}
                             onChangeText={(text) => setUserInfo({ ...userInfo, location: text })}
                             mode="outlined"
                             className="mb-3"
@@ -140,7 +101,7 @@ export default function ProfileScreen({ navigation }) {
                         />
                         <TextInput
                             label="Bio"
-                            value={userInfo.bio}
+                            defaultValue={user?.prefs?.bio}
                             onChangeText={(text) => setUserInfo({ ...userInfo, bio: text })}
                             mode="outlined"
                             multiline
@@ -176,7 +137,7 @@ export default function ProfileScreen({ navigation }) {
                 <>
                     <Button
                         mode="contained"
-                        onPress={handleSaveProfile}
+                        onPress={() => setOpen(true)}
                         loading={isLoading}
                         disabled={isLoading}
                         icon="check"
@@ -235,7 +196,13 @@ export default function ProfileScreen({ navigation }) {
             <ScrollView
                 contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
                 showsVerticalScrollIndicator={false}>
-                {/* {renderProfileHeader()} */}
+                <PasswordModal
+                    open={open}
+                    setOpen={setOpen}
+                    password={password}
+                    setPassword={setPassword}
+                    handleSaveProfile={handleSaveProfile}
+                />
                 {renderInfoSection()}
                 {renderActionButtons()}
                 {!isEditing && renderLogoutButton()}

@@ -3,7 +3,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, ScrollView, TouchableOpacity, View } from 'react-native';
-import { Button, Text, TextInput } from 'react-native-paper';
+import { ActivityIndicator, Button, Text, TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/authContext';
 import { createHabit } from '../../lib/appwrite';
@@ -14,7 +14,7 @@ export default function AddHabitScreen() {
     const [description, setDescription] = useState('');
     const [frequency, setFrequency] = useState('Daily');
     const [isLoading, setIsLoading] = useState(false);
-    // const [showFrequencyPicker, setShowFrequencyPicker] = useState(false);
+
     const navigation = useRouter();
 
     const frequencies = ['Daily', 'Weekly', 'Monthly'];
@@ -186,8 +186,9 @@ export default function AddHabitScreen() {
                     icon="plus"
                     buttonColor="#3b82f6"
                     textColor="#fff"
-                    className="py-1">
+                    className="py-1 flex-row items-center justify-center gap-2">
                     Add Habit
+                    {isLoading && <ActivityIndicator size={'small'} />}
                 </Button>
             </View>
         </SafeAreaView>

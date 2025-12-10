@@ -5,7 +5,7 @@ import { Alert, Pressable, Text, View } from 'react-native';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Card, Chip } from 'react-native-paper';
 
-const HabitCard = ({ habit, onComplete, onEdit, onDelete }) => {
+const HabitCard = ({ habit, onComplete, onEdit, onDelete, handleProfileSave }) => {
     const [isCompleted, setIsCompleted] = useState(habit?.isCompleted);
     const [menuVisible, setMenuVisible] = useState(false);
     const getFrequencyColor = (frequency) => {
@@ -85,7 +85,7 @@ const HabitCard = ({ habit, onComplete, onEdit, onDelete }) => {
 
                         <View className="flex-row gap-2 items-center p-2 rounded-full bg-yellow-100 ">
                             <AntDesign name="fire" size={18} color="black" />
-                            <Text>10 day streak</Text>
+                            <Text>0 day streak</Text>
                         </View>
                     </View>
 
